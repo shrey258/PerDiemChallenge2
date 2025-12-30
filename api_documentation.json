@@ -1,0 +1,851 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Coding Challenge API Documentation",
+    "description": "API documentation for the Coding Challenge REST API",
+    "version": "1.0.0"
+  },
+  "definitions": {},
+  "paths": {
+    "/store-times/": {
+      "get": {
+        "description": "Get all store times",
+        "tags": [
+          "store-times"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "day_of_week": {
+                    "type": "number"
+                  },
+                  "is_open": {
+                    "type": "boolean"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new store time",
+        "tags": [
+          "store-times"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "day_of_week",
+                "is_open",
+                "start_time",
+                "end_time"
+              ],
+              "properties": {
+                "day_of_week": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day_of_week": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store-times/{id}": {
+      "get": {
+        "description": "Get store time by ID",
+        "tags": [
+          "store-times"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Store time ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day_of_week": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update a store time by ID",
+        "tags": [
+          "store-times"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "day_of_week": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "description": "Store time ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day_of_week": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a store time by ID",
+        "tags": [
+          "store-times"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Store time ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store-times/day/{day_of_week}": {
+      "get": {
+        "description": "Get store time by day of week",
+        "tags": [
+          "store-times"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Day of week (0-6)",
+            "pattern": "^[0-6]$",
+            "required": true,
+            "in": "path",
+            "name": "day_of_week"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "day_of_week": {
+                    "type": "number"
+                  },
+                  "is_open": {
+                    "type": "boolean"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store-overrides/": {
+      "get": {
+        "description": "Get all store overrides",
+        "tags": [
+          "store-overrides"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "day": {
+                    "type": "number"
+                  },
+                  "month": {
+                    "type": "number"
+                  },
+                  "is_open": {
+                    "type": "boolean"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new store override",
+        "tags": [
+          "store-overrides"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "day",
+                "month",
+                "is_open",
+                "start_time",
+                "end_time"
+              ],
+              "properties": {
+                "day": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 31
+                },
+                "month": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day": {
+                  "type": "number"
+                },
+                "month": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store-overrides/{id}": {
+      "get": {
+        "description": "Get store override by ID",
+        "tags": [
+          "store-overrides"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Store override ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day": {
+                  "type": "number"
+                },
+                "month": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update a store override by ID",
+        "tags": [
+          "store-overrides"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "day": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 31
+                },
+                "month": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                }
+              }
+            }
+          },
+          {
+            "type": "string",
+            "description": "Store override ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "day": {
+                  "type": "number"
+                },
+                "month": {
+                  "type": "number"
+                },
+                "is_open": {
+                  "type": "boolean"
+                },
+                "start_time": {
+                  "type": "string"
+                },
+                "end_time": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a store override by ID",
+        "tags": [
+          "store-overrides"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Store override ID",
+            "required": true,
+            "in": "path",
+            "name": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/store-overrides/date/{month}/{day}": {
+      "get": {
+        "description": "Get store overrides for a specific date",
+        "tags": [
+          "store-overrides"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Month (1-12)",
+            "required": true,
+            "in": "path",
+            "name": "month"
+          },
+          {
+            "type": "string",
+            "description": "Day (1-31)",
+            "required": true,
+            "in": "path",
+            "name": "day"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "day": {
+                    "type": "number"
+                  },
+                  "month": {
+                    "type": "number"
+                  },
+                  "is_open": {
+                    "type": "boolean"
+                  },
+                  "start_time": {
+                    "type": "string"
+                  },
+                  "end_time": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/": {
+      "post": {
+        "description": "Authenticate user and return JWT token",
+        "tags": [
+          "authentication"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "User email"
+                },
+                "password": {
+                  "type": "string",
+                  "minLength": 6,
+                  "description": "User password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "description": "JWT token"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "Error message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify": {
+      "get": {
+        "description": "Verify JWT token",
+        "tags": [
+          "authentication"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Bearer token",
+            "required": true,
+            "in": "header",
+            "name": "authorization"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "userId": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "host": "coding-challenge-pd-1a25b1a14f34.herokuapp.com",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "basicAuth": {
+      "type": "basic",
+      "description": "Basic authentication for Swagger documentation"
+    }
+  },
+  "tags": [
+    {
+      "name": "store-times",
+      "description": "Store times endpoints (opening hours)"
+    },
+    {
+      "name": "store-overrides",
+      "description": "Store overrides endpoints (special overwrites dates)"
+    }
+  ]
+}
