@@ -10,7 +10,7 @@ function App() {
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
-          <Text style={[styles.text, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}>
+          <Text style={[styles.text, isDarkMode ? styles.textLight : styles.textDark]}>
             PerDiem Challenge
           </Text>
         </View>
@@ -31,6 +31,12 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  textLight: {
+    color: '#FFFFFF',
+  },
+  textDark: {
+    color: '#000000',
   },
 });
 
