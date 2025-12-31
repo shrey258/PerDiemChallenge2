@@ -127,8 +127,54 @@ export const getStoreAvailability = (
 };
 
 /**
- * Checks if the store is currently open based on the timezone.
+ * Finds the next time the store will open from the perspective of NYC time.
  */
+export const getNextOpeningTime = (
+  nowInNYC: Date,
+  times: StoreTime[],
+  overrides: StoreOverride[]
+): Date | null => {
+  // Check next 14 days to be safe
+  for (let i = 0; i < 14; i++) {
+    const checkDate = addDays(nowInNYC, i);
+    const { dayOfWeek, day, month } = matchApiDate(checkDate);
+    const baseDate = startOfDay(checkDate);
+
+    // 1. Check Overrides
+    const dayOverrides = overrides.filter((o) => o.day === day && o.month === month);
+    if (dayOverrides.length > 0) {
+      const openOverrides = dayOverrides
+        .filter((o) => o.is_open)
+        .map((o) => {
+          const [h, m] = o.start_time.split(':').map(Number);
+          const openDate = new Date(baseDate);
+          openDate.setHours(h, m, 0, 0);
+          return fromZonedTime(openDate, 'America/New_York');
+        })
+        .filter((d) => isAfter(d, nowInNYC))
+        .sort((a, b) => a.getTime() - b.getTime());
+
+      if (openOverrides.length > 0) return openOverrides[0];
+      if (dayOverrides.some((o) => o.is_open)) continue; // Found opening today but it's in the past
+    } else {
+      // 2. Weekly Schedule
+      const daySchedules = times
+        .filter((t) => t.day_of_week === dayOfWeek && t.is_open)
+        .map((s) => {
+          const [h, m] = s.start_time.split(':').map(Number);
+          const openDate = new Date(baseDate);
+          openDate.setHours(h, m, 0, 0);
+          return fromZonedTime(openDate, 'America/New_York');
+        })
+        .filter((d) => isAfter(d, nowInNYC))
+        .sort((a, b) => a.getTime() - b.getTime());
+
+      if (daySchedules.length > 0) return daySchedules[0];
+    }
+  }
+
+  return null;
+};
 export const isStoreOpenNow = (
   now: Date,
   times: StoreTime[],

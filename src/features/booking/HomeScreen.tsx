@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,7 +18,8 @@ import {
   getNowInTimezone,
   getTargetTimezone,
 } from '../../utils/dateHelpers';
-import { isStoreOpenNow } from '../../utils/availability';
+import { isStoreOpenNow, getNextOpeningTime } from '../../utils/availability';
+import { scheduleOpeningNotification, cancelOpeningNotifications, triggerDemoNotification } from '../../services/notificationService';
 import TimezoneToggle from '../../components/TimezoneToggle';
 import BookingModal from '../../components/BookingModal';
 
@@ -49,9 +51,18 @@ const HomeScreen: React.FC = () => {
 
   const currentStoreStatus = useMemo(() => {
     if (!data) return { isOpen: false };
-    // The restaurant's physical status is ALWAYS based on NYC time
     const nowInNYC = getNowInTimezone('America/New_York');
     const isOpen = isStoreOpenNow(nowInNYC, data.times, data.overrides);
+
+    if (!isOpen) {
+      const nextOpen = getNextOpeningTime(nowInNYC, data.times, data.overrides);
+      if (nextOpen) {
+        scheduleOpeningNotification(nextOpen).catch(console.error);
+      }
+    } else {
+      cancelOpeningNotifications().catch(console.error);
+    }
+
     return { isOpen };
   }, [data]);
 
@@ -76,10 +87,18 @@ const HomeScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
-            <View>
-              <Text style={styles.greeting}>{greeting}</Text>
-              <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
-            </View>
+            <TouchableOpacity 
+              activeOpacity={1} 
+              onLongPress={() => {
+                triggerDemoNotification();
+                Alert.alert('Cheat Code Activated', 'Demo notification scheduled for 10 seconds from now. Background the app to see it!');
+              }}
+            >
+              <View>
+                <Text style={styles.greeting}>{greeting}</Text>
+                <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
+              </View>
+            </TouchableOpacity>
             <TouchableOpacity onPress={logout} style={styles.logoutButton}>
               <View style={styles.logoutIcon}>
                 <View style={styles.logoutArrow} />
