@@ -5,7 +5,12 @@ import { toZonedTime } from 'date-fns-tz';
  * Returns the current moment, converted to the target timezone.
  */
 export const getNowInTimezone = (timezone: string): Date => {
-  return toZonedTime(new Date(), timezone);
+  try {
+    const zoned = toZonedTime(new Date(), timezone);
+    return isNaN(zoned.getTime()) ? new Date() : zoned;
+  } catch {
+    return new Date();
+  }
 };
 
 /**
