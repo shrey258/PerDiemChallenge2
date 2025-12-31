@@ -25,7 +25,7 @@ import BookingModal from '../../components/BookingModal';
 
 const HomeScreen: React.FC = () => {
   const { timezonePreference, booking, logout } = useAppStore();
-  const { data, isLoading, error } = useStoreData();
+  const { data, isLoading, error, refetch } = useStoreData();
   const [isModalVisible, setModalVisible] = useState(false);
 
   const greeting = useMemo(
@@ -78,6 +78,9 @@ const HomeScreen: React.FC = () => {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>Failed to load store data.</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -326,6 +329,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FF3B30',
     fontWeight: '600',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

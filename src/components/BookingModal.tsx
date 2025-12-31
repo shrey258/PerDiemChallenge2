@@ -5,6 +5,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
@@ -50,23 +52,34 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setSelectedSlot(null);
   };
 
-  const handleConfirm = () => {
-    if (selectedSlot) {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleBooking = async () => {
+    if (!selectedSlot) return;
+
+    setSubmitting(true);
+    try {
       const targetTz = getTargetTimezone(timezonePreference);
-      const [hours, minutes] = selectedSlot.split(':').map(Number);
-      
-      // Create a date object in the selected timezone
-      const bookingDate = new Date(selectedDate);
-      bookingDate.setHours(hours, minutes, 0, 0);
-      
-      // Convert from the active timezone to UTC for storage
-      const utcDate = fromZonedTime(bookingDate, targetTz);
-      
+      // Create UTC date
+      const bookingDate = fromZonedTime(
+        `${selectedDate.toISOString().split('T')[0]}T${selectedSlot}`,
+        targetTz
+      );
+
       setBooking({
-        date: utcDate.toISOString(),
-        slot: selectedSlot, // Keep for display convenience, but logic will rely on ISO date
+        date: bookingDate.toISOString(),
+        slot: selectedSlot,
       });
+
+      // Simulate API delay for demo
+      await new Promise<void>((resolve) => setTimeout(resolve, 800));
+
       onClose();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to save your booking. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -118,12 +131,16 @@ const BookingModal: React.FC<BookingModalProps> = ({
           <TouchableOpacity
             style={[
               styles.confirmButton,
-              !selectedSlot && styles.confirmButtonDisabled,
+              (!selectedSlot || submitting) && styles.confirmButtonDisabled,
             ]}
-            onPress={handleConfirm}
-            disabled={!selectedSlot}
+            onPress={handleBooking}
+            disabled={!selectedSlot || submitting}
           >
-            <Text style={styles.confirmButtonText}>Confirm Booking</Text>
+            {submitting ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.confirmButtonText}>Confirm Appointment</Text>
+            )}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
