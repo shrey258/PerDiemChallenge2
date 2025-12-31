@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import {
   Modal,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { fromZonedTime } from 'date-fns-tz';
 import { StoreOverride, StoreTime } from '../types/api';
