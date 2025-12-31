@@ -20,11 +20,18 @@ const mmkvStorage: StateStorage = {
 
 export type TimezonePreference = 'local' | 'America/New_York';
 
+interface Booking {
+  date: string; // ISO string
+  slot: string; // "HH:mm"
+}
+
 interface AppState {
   timezonePreference: TimezonePreference;
   user: User | null;
+  booking: Booking | null;
   toggleTimezone: () => void;
   setUser: (user: User | null) => void;
+  setBooking: (booking: Booking | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -32,12 +39,14 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       timezonePreference: 'local',
       user: null,
+      booking: null,
       toggleTimezone: () =>
         set((state) => ({
           timezonePreference:
             state.timezonePreference === 'local' ? 'America/New_York' : 'local',
         })),
       setUser: (user) => set({ user }),
+      setBooking: (booking) => set({ booking }),
     }),
     {
       name: 'app-storage',

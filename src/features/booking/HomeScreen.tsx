@@ -4,47 +4,56 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   ScrollView,
 } from 'react-native';
+import { format, parseISO } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { useAppStore } from '../../store/useAppStore';
 import { useStoreData } from '../../hooks/useStoreData';
 import {
-  generateNext30Days,
   getGreetingMessage,
+  getNowInTimezone,
+  getTargetTimezone,
 } from '../../utils/dateHelpers';
-import { getStoreAvailability } from '../../utils/availability';
+import { isStoreOpenNow } from '../../utils/availability';
 import TimezoneToggle from '../../components/TimezoneToggle';
-import DateList from '../../components/DateList';
-import TimeSlotGrid from '../../components/TimeSlotGrid';
+import BookingModal from '../../components/BookingModal';
 
 const HomeScreen: React.FC = () => {
-  const { timezonePreference } = useAppStore();
+  const { timezonePreference, booking } = useAppStore();
   const { data, isLoading, error } = useStoreData();
-
-  const dates = useMemo(
-    () => generateNext30Days(timezonePreference),
-    [timezonePreference]
-  );
-
-  const [selectedDate, setSelectedDate] = useState<Date>(dates[0]);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const greeting = useMemo(
     () => getGreetingMessage(timezonePreference),
     [timezonePreference]
   );
 
-  const availability = useMemo(() => {
-    if (!data) return { isOpen: false, slots: [], status: 'closed' as const };
-    return getStoreAvailability(selectedDate, data.times, data.overrides);
-  }, [selectedDate, data]);
+  const upcomingBooking = useMemo(() => {
+    if (!booking) return null;
+    const targetTz = getTargetTimezone(timezonePreference);
+    
+    // The stored date is now a proper UTC ISO string
+    const utcDate = parseISO(booking.date);
+    
+    // Convert UTC to the target timezone for display
+    const zonedDate = toZonedTime(utcDate, targetTz);
 
-  // Reset selected slot when date changes
-  const handleSelectDate = (date: Date) => {
-    setSelectedDate(date);
-    setSelectedSlot(null);
-  };
+    return {
+      displayDate: format(zonedDate, 'EEEE, MMMM do, yyyy'),
+      displayTime: format(zonedDate, 'HH:mm'),
+    };
+  }, [booking, timezonePreference]);
+
+  const currentStoreStatus = useMemo(() => {
+    if (!data) return { isOpen: false };
+    // The restaurant's physical status is ALWAYS based on NYC time
+    const nowInNYC = getNowInTimezone('America/New_York');
+    const isOpen = isStoreOpenNow(nowInNYC, data.times, data.overrides);
+    return { isOpen };
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -64,61 +73,65 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.subtitle}>Book your next session</Text>
+          <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
         </View>
 
-        <View style={styles.stickyToggle}>
-          <TimezoneToggle />
-        </View>
+        <TimezoneToggle />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Date</Text>
-          <DateList
-            dates={dates}
-            selectedDate={selectedDate}
-            onSelectDate={handleSelectDate}
-          />
-        </View>
-
-        <View style={styles.section}>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Current Status</Text>
           <View style={styles.statusRow}>
-            <Text style={styles.sectionTitle}>Available Slots</Text>
-          <View style={styles.badgeContainer}>
             <View
               style={[
                 styles.statusIndicator,
-                availability.isOpen ? styles.indicatorOpen : styles.indicatorClosed,
+                currentStoreStatus.isOpen ? styles.indicatorOpen : styles.indicatorClosed,
               ]}
             />
             <Text
               style={[
                 styles.statusText,
-                availability.isOpen ? styles.textOpen : styles.textClosed,
+                currentStoreStatus.isOpen ? styles.textOpen : styles.textClosed,
               ]}
             >
-              Store {availability.isOpen ? 'Open' : 'Closed'}
+              {currentStoreStatus.isOpen ? 'Open Now' : 'Closed Now'}
             </Text>
           </View>
-          </View>
+        </View>
 
-          {availability.isOpen ? (
-            <TimeSlotGrid
-              slots={availability.slots}
-              selectedSlot={selectedSlot}
-              onSelectSlot={setSelectedSlot}
-            />
-          ) : (
-            <View style={styles.closedContainer}>
-              <Text style={styles.closedText}>
-                The store is closed for the selected date.
-              </Text>
-            </View>
-          )}
+        {upcomingBooking && (
+          <View style={styles.bookingCard}>
+            <Text style={styles.bookingTitle}>Upcoming Appointment</Text>
+            <Text style={styles.bookingDate}>
+              {upcomingBooking.displayDate}
+            </Text>
+            <Text style={styles.bookingTime}>at {upcomingBooking.displayTime}</Text>
+          </View>
+        )}
+
+        <View style={styles.actionContainer}>
+          <TouchableOpacity
+            style={styles.bookButton}
+            onPress={() => setModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.bookButtonText}>
+              {booking ? 'Reschedule Appointment' : 'Book Appointment'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {data && (
+        <BookingModal
+          visible={isModalVisible}
+          onClose={() => setModalVisible(false)}
+          times={data.times}
+          overrides={data.overrides}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -126,7 +139,10 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F2F2F7',
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   center: {
     flex: 1,
@@ -134,65 +150,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    padding: 20,
-    paddingTop: 10,
+    padding: 24,
+    paddingBottom: 16,
   },
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#000',
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#8E8E93',
-    marginTop: 4,
   },
-  stickyToggle: {
-    backgroundColor: '#F8F9FA',
-    paddingBottom: 8,
+  card: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  section: {
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
+  cardTitle: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#1C1C1E',
-    marginHorizontal: 20,
-    marginBottom: 8,
+    color: '#8E8E93',
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
   statusRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingRight: 20,
-  },
-  badgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
   },
   statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 10,
   },
   indicatorOpen: {
     backgroundColor: '#34C759',
+    shadowColor: '#34C759',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
   },
   indicatorClosed: {
     backgroundColor: '#FF3B30',
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 20,
     fontWeight: 'bold',
-    textTransform: 'uppercase',
   },
   textOpen: {
     color: '#34C759',
@@ -200,21 +212,54 @@ const styles = StyleSheet.create({
   textClosed: {
     color: '#FF3B30',
   },
-  closedContainer: {
-    margin: 20,
-    padding: 30,
-    backgroundColor: '#FFF',
+  bookingCard: {
+    backgroundColor: '#007AFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 20,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderStyle: 'dashed',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  closedText: {
-    fontSize: 16,
-    color: '#8E8E93',
-    textAlign: 'center',
+  bookingTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  bookingDate: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  bookingTime: {
+    fontSize: 18,
+    color: '#FFF',
+    marginTop: 4,
+  },
+  actionContainer: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+  },
+  bookButton: {
+    backgroundColor: '#000',
+    paddingVertical: 18,
+    borderRadius: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  bookButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   errorText: {
     fontSize: 16,

@@ -2,11 +2,23 @@ import { format, addDays, getDay, getDate, getMonth, getHours } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
 /**
+ * Returns the target timezone string.
+ * If 'local' is passed, it returns the device's local timezone name.
+ */
+export const getTargetTimezone = (timezone: string): string => {
+  if (timezone === 'local') {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+  return timezone;
+};
+
+/**
  * Returns the current moment, converted to the target timezone.
  */
 export const getNowInTimezone = (timezone: string): Date => {
+  const targetTz = getTargetTimezone(timezone);
   try {
-    const zoned = toZonedTime(new Date(), timezone);
+    const zoned = toZonedTime(new Date(), targetTz);
     return isNaN(zoned.getTime()) ? new Date() : zoned;
   } catch {
     return new Date();
