@@ -28,10 +28,13 @@ interface Booking {
 interface AppState {
   timezonePreference: TimezonePreference;
   user: User | null;
+  token: string | null;
   booking: Booking | null;
   toggleTimezone: () => void;
   setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
   setBooking: (booking: Booking | null) => void;
+  logout: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -39,6 +42,7 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       timezonePreference: 'local',
       user: null,
+      token: null,
       booking: null,
       toggleTimezone: () =>
         set((state) => ({
@@ -46,7 +50,9 @@ export const useAppStore = create<AppState>()(
             state.timezonePreference === 'local' ? 'America/New_York' : 'local',
         })),
       setUser: (user) => set({ user }),
+      setToken: (token) => set({ token }),
       setBooking: (booking) => set({ booking }),
+      logout: () => set({ user: null, token: null, booking: null }),
     }),
     {
       name: 'app-storage',

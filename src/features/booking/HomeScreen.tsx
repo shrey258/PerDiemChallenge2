@@ -22,7 +22,7 @@ import TimezoneToggle from '../../components/TimezoneToggle';
 import BookingModal from '../../components/BookingModal';
 
 const HomeScreen: React.FC = () => {
-  const { timezonePreference, booking } = useAppStore();
+  const { timezonePreference, booking, logout } = useAppStore();
   const { data, isLoading, error } = useStoreData();
   const [isModalVisible, setModalVisible] = useState(false);
 
@@ -75,8 +75,15 @@ const HomeScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.greeting}>{greeting}</Text>
+              <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
+            </View>
+            <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TimezoneToggle />
@@ -152,6 +159,21 @@ const styles = StyleSheet.create({
   header: {
     padding: 24,
     paddingBottom: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  logoutButton: {
+    padding: 8,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#FF3B30',
+    fontWeight: '600',
+    fontSize: 14,
   },
   greeting: {
     fontSize: 28,
