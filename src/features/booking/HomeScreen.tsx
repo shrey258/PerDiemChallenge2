@@ -81,7 +81,10 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
             </View>
             <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-              <Text style={styles.logoutText}>Logout</Text>
+              <View style={styles.logoutIcon}>
+                <View style={styles.logoutArrow} />
+                <View style={styles.logoutBar} />
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -167,13 +170,30 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     padding: 8,
-    backgroundColor: '#F2F2F7',
     borderRadius: 8,
   },
-  logoutText: {
-    color: '#FF3B30',
-    fontWeight: '600',
-    fontSize: 14,
+  logoutIcon: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoutArrow: {
+    width: 10,
+    height: 10,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderColor: '#000',
+    transform: [{ rotate: '45deg' }],
+    position: 'absolute',
+    right: 4,
+  },
+  logoutBar: {
+    width: 14,
+    height: 2,
+    backgroundColor: '#000',
+    position: 'absolute',
+    left: 4,
   },
   greeting: {
     fontSize: 28,
