@@ -107,6 +107,7 @@ const HomeScreen: React.FC = () => {
   const upcomingBooking = useMemo(() => {
     if (!booking) return null;
     const targetTz = getTargetTimezone(timezonePreference);
+    // Convert the UTC ISO string back to the target timezone for display
     const utcDate = parseISO(booking.date);
     const zonedDate = toZonedTime(utcDate, targetTz);
 

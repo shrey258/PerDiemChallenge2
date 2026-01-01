@@ -60,14 +60,17 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setSubmitting(true);
     try {
       const targetTz = getTargetTimezone(timezonePreference);
-      // Create UTC date
-      const bookingDate = fromZonedTime(
-        `${selectedDate.toISOString().split('T')[0]}T${selectedSlot}`,
-        targetTz
-      );
+      
+      // Combine date and time correctly without string manipulation issues
+      const [hours, minutes] = selectedSlot.split(':').map(Number);
+      const bookingDateBase = new Date(selectedDate);
+      bookingDateBase.setHours(hours, minutes, 0, 0);
+
+      // Convert from the selected timezone back to UTC for storage
+      const bookingDateUtc = fromZonedTime(bookingDateBase, targetTz);
 
       setBooking({
-        date: bookingDate.toISOString(),
+        date: bookingDateUtc.toISOString(),
         slot: selectedSlot,
       });
 
