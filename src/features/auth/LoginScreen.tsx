@@ -16,9 +16,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAppStore } from '../../store/useAppStore';
 import { login, verifyToken } from '../../services/authService';
 
-GoogleSignin.configure({
-  // webClientId: 'YOUR_WEB_CLIENT_ID', // Only if you need to verify on backend
-});
+GoogleSignin.configure({});
 
 const LoginScreen: React.FC = () => {
   const { setToken, setUser } = useAppStore();
@@ -36,8 +34,6 @@ const LoginScreen: React.FC = () => {
     try {
       const token = await login(email, password);
       setToken(token);
-
-      // Verify token to get user details
       const user = await verifyToken(token);
       setUser(user);
     } catch (error: any) {
@@ -51,9 +47,7 @@ const LoginScreen: React.FC = () => {
   const handleGmailLogin = async () => {
     setLoading(true);
     try {
-      // Check if your device supports Google Play
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      // Get the users ID token
       const { data } = await GoogleSignin.signIn();
       const idToken = data?.idToken;
 
@@ -61,10 +55,7 @@ const LoginScreen: React.FC = () => {
         throw new Error('No ID token found');
       }
 
-      // Create a Google credential with the token
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
-      // Sign-in the user with the credential
       await auth().signInWithCredential(googleCredential);
     } catch (error: any) {
       console.error(error);

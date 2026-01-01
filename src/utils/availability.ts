@@ -3,10 +3,6 @@ import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { StoreOverride, StoreTime } from '../types/api';
 import { matchApiDate } from './dateHelpers';
 
-/**
- * Generates 15-minute interval time slots between startTime and endTime.
- * The output slots are filtered to only include those that fall on the targetDate in the targetTimezone.
- */
 export const generateTimeSlots = (
   baseDate: Date,
   startTime: string,
@@ -18,7 +14,6 @@ export const generateTimeSlots = (
   const startStr = startTime.substring(0, 5);
   const endStr = endTime.substring(0, 5);
 
-  // Parse API times as NYC wall-clock times
   const nycStart = fromZonedTime(parse(startStr, 'HH:mm', baseDate), 'America/New_York');
   const nycEnd = fromZonedTime(parse(endStr, 'HH:mm', baseDate), 'America/New_York');
 
@@ -31,7 +26,6 @@ export const generateTimeSlots = (
     try {
       const zonedTime = toZonedTime(currentNYC, targetTimezone);
       
-      // Only include the slot if it falls on the selected date in the LOCAL timezone
       if (!isNaN(zonedTime.getTime()) && isSameDay(zonedTime, targetDate)) {
         slots.push(format(zonedTime, 'HH:mm'));
       }
@@ -52,11 +46,6 @@ interface AvailabilityResult {
   status: 'open' | 'closed';
 }
 
-/**
- * Determines store availability and generates slots for a specific date.
- * Handles multiple time ranges per day and converts slots to targetTimezone.
- * Crucially handles cross-day shifts (e.g., NYC Monday late night appearing on India Tuesday).
- */
 export const getStoreAvailability = (
   date: Date,
   times: StoreTime[],
@@ -65,11 +54,6 @@ export const getStoreAvailability = (
 ): AvailabilityResult => {
   const targetDateStart = startOfDay(date);
   const now = new Date();
-  
-  // To correctly find slots for 'targetDate', we need to check:
-  // 1. Schedules/Overrides for 'targetDate' (which might shift forward/backward)
-  // 2. Schedules/Overrides for 'targetDate - 1 day' (which might shift forward into targetDate)
-  // 3. Schedules/Overrides for 'targetDate + 1 day' (which might shift backward into targetDate)
   
   const datesToCheck = [
     subDays(targetDateStart, 1),
@@ -83,7 +67,6 @@ export const getStoreAvailability = (
     const { dayOfWeek, day, month } = matchApiDate(checkDate);
     const baseDate = startOfDay(checkDate);
 
-    // Check Overrides for this checkDate
     const dayOverrides = overrides.filter((o) => o.day === day && o.month === month);
     if (dayOverrides.length > 0) {
       const openOverrides = dayOverrides.filter(o => o.is_open);
@@ -92,7 +75,6 @@ export const getStoreAvailability = (
         allSlots = [...allSlots, ...slots];
       });
     } else {
-      // Check Standard Schedule if no overrides
       const daySchedules = times.filter((t) => t.day_of_week === dayOfWeek && t.is_open);
       daySchedules.forEach(s => {
         const slots = generateTimeSlots(baseDate, s.start_time, s.end_time, targetTimezone, targetDateStart);
@@ -103,11 +85,9 @@ export const getStoreAvailability = (
 
   const uniqueSlots = Array.from(new Set(allSlots)).sort();
   
-  // Filter out past slots if the target date is today in the target timezone
   const filteredSlots = uniqueSlots.filter(slot => {
     const nowInTargetTz = toZonedTime(now, targetTimezone);
     
-    // If the selected date is not today (or earlier) in target timezone, show all
     if (!isSameDay(date, nowInTargetTz)) {
       return isAfter(date, nowInTargetTz) || isSameDay(date, nowInTargetTz);
     }
@@ -126,21 +106,16 @@ export const getStoreAvailability = (
   };
 };
 
-/**
- * Finds the next time the store will open from the perspective of NYC time.
- */
 export const getNextOpeningTime = (
   nowInNYC: Date,
   times: StoreTime[],
   overrides: StoreOverride[]
 ): Date | null => {
-  // Check next 14 days to be safe
   for (let i = 0; i < 14; i++) {
     const checkDate = addDays(nowInNYC, i);
     const { dayOfWeek, day, month } = matchApiDate(checkDate);
     const baseDate = startOfDay(checkDate);
 
-    // 1. Check Overrides
     const dayOverrides = overrides.filter((o) => o.day === day && o.month === month);
     if (dayOverrides.length > 0) {
       const openOverrides = dayOverrides
@@ -155,9 +130,8 @@ export const getNextOpeningTime = (
         .sort((a, b) => a.getTime() - b.getTime());
 
       if (openOverrides.length > 0) return openOverrides[0];
-      if (dayOverrides.some((o) => o.is_open)) continue; // Found opening today but it's in the past
+      if (dayOverrides.some((o) => o.is_open)) continue;
     } else {
-      // 2. Weekly Schedule
       const daySchedules = times
         .filter((t) => t.day_of_week === dayOfWeek && t.is_open)
         .map((s) => {
@@ -175,6 +149,7 @@ export const getNextOpeningTime = (
 
   return null;
 };
+
 export const isStoreOpenNow = (
   now: Date,
   times: StoreTime[],
@@ -183,19 +158,15 @@ export const isStoreOpenNow = (
   const { dayOfWeek, day, month } = matchApiDate(now);
   const currentTimeStr = format(now, 'HH:mm');
   
-  // Helper to check if current time is within a range
   const isWithin = (start: string, end: string) => {
-    // Simple string comparison works for HH:mm 24h format
     return currentTimeStr >= start.substring(0, 5) && currentTimeStr < end.substring(0, 5);
   };
 
-  // 1. Overrides
   const dayOverrides = overrides.filter((o) => o.day === day && o.month === month);
   if (dayOverrides.length > 0) {
     return dayOverrides.some(o => o.is_open && isWithin(o.start_time, o.end_time));
   }
 
-  // 2. Weekly Schedule
   const daySchedules = times.filter((t) => t.day_of_week === dayOfWeek);
   return daySchedules.some(s => s.is_open && isWithin(s.start_time, s.end_time));
 };

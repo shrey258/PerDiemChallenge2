@@ -23,7 +23,11 @@ import {
   getTargetTimezone,
 } from '../../utils/dateHelpers';
 import { isStoreOpenNow, getNextOpeningTime } from '../../utils/availability';
-import { scheduleOpeningNotification, cancelOpeningNotifications, triggerDemoNotification } from '../../services/notificationService';
+import {
+  scheduleOpeningNotification,
+  cancelOpeningNotifications,
+  triggerDemoNotification,
+} from '../../services/notificationService';
 import BookingModal from '../../components/BookingModal';
 
 const COLORS = {
@@ -36,17 +40,15 @@ const COLORS = {
   divider: '#E6EAF0',
   green: '#22C55E',
   red: '#EF4444',
-  accent: '#111827',
 };
 
 const RADII = {
   card: 28,
   pill: 999,
-  button: 20,
 };
 
 const SHADOW = {
-  shadowColor: '#000',
+  shadowColor: COLORS.black,
   shadowOpacity: 0.06,
   shadowRadius: 16,
   shadowOffset: { width: 0, height: 8 },
@@ -84,23 +86,15 @@ const HomeScreen: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      // 1. Sign out from Firebase
       await auth().signOut();
-      
-      // 2. Sign out from Google (to allow switching accounts next time)
-      // Note: We don't check isSignedIn() here as it might be unavailable on some versions
-      // We just attempt the sign out.
       try {
         await GoogleSignin.signOut();
       } catch {
         // Ignore Google sign out errors if already signed out
       }
-      
-      // 3. Clear the local store
       clearStore();
     } catch (err) {
       console.error('Logout error:', err);
-      // Fallback: still clear store if something fails
       clearStore();
     }
   };
@@ -113,11 +107,7 @@ const HomeScreen: React.FC = () => {
   const upcomingBooking = useMemo(() => {
     if (!booking) return null;
     const targetTz = getTargetTimezone(timezonePreference);
-    
-    // The stored date is now a proper UTC ISO string
     const utcDate = parseISO(booking.date);
-    
-    // Convert UTC to the target timezone for display
     const zonedDate = toZonedTime(utcDate, targetTz);
 
     return {
@@ -151,7 +141,7 @@ const HomeScreen: React.FC = () => {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={COLORS.accent} />
+        <ActivityIndicator size="large" color={COLORS.black} />
       </View>
     );
   }
@@ -314,14 +304,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  root: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 140 },
+  root: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 140,
+  },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: { paddingBottom: 4 },
+  header: {
+    paddingBottom: 4,
+  },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -349,7 +346,7 @@ const styles = StyleSheet.create({
     height: 10,
     borderTopWidth: 2,
     borderRightWidth: 2,
-    borderColor: '#000',
+    borderColor: COLORS.black,
     transform: [{ rotate: '45deg' }],
     position: 'absolute',
     right: 4,
@@ -357,7 +354,7 @@ const styles = StyleSheet.create({
   logoutBar: {
     width: 14,
     height: 2,
-    backgroundColor: '#000',
+    backgroundColor: COLORS.black,
     position: 'absolute',
     left: 4,
   },
@@ -451,7 +448,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 10,
-    backgroundColor: '#111827',
+    backgroundColor: COLORS.black,
   },
   heroContent: {
     padding: 20,
