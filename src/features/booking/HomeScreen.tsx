@@ -11,6 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAppStore } from '../../store/useAppStore';
 import { useStoreData } from '../../hooks/useStoreData';
 import {
@@ -24,9 +26,32 @@ import TimezoneToggle from '../../components/TimezoneToggle';
 import BookingModal from '../../components/BookingModal';
 
 const HomeScreen: React.FC = () => {
-  const { timezonePreference, booking, logout } = useAppStore();
+  const { timezonePreference, booking, logout: clearStore } = useAppStore();
   const { data, isLoading, error, refetch } = useStoreData();
   const [isModalVisible, setModalVisible] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      // 1. Sign out from Firebase
+      await auth().signOut();
+      
+      // 2. Sign out from Google (to allow switching accounts next time)
+      // Note: We don't check isSignedIn() here as it might be unavailable on some versions
+      // We just attempt the sign out.
+      try {
+        await GoogleSignin.signOut();
+      } catch {
+        // Ignore Google sign out errors if already signed out
+      }
+      
+      // 3. Clear the local store
+      clearStore();
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Fallback: still clear store if something fails
+      clearStore();
+    }
+  };
 
   const greeting = useMemo(
     () => getGreetingMessage(timezonePreference),
@@ -102,7 +127,7 @@ const HomeScreen: React.FC = () => {
                 <Text style={styles.subtitle}>Welcome to Per Diem Challenge</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
               <View style={styles.logoutIcon}>
                 <View style={styles.logoutArrow} />
                 <View style={styles.logoutBar} />

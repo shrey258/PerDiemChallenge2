@@ -11,34 +11,40 @@ const queryClient = new QueryClient();
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const { token, setToken, setUser } = useAppStore();
+  const { token, setToken, setUser, user } = useAppStore();
   const [initializing, setInitializing] = useState(true);
 
   // Handle user state changes
   useEffect(() => {
     const onAuthStateChanged = (firebaseUser: FirebaseAuthTypes.User | null) => {
       if (firebaseUser) {
-        // If logged in via Firebase, we can sync to our store
-        // We'll use the uid as a placeholder token if needed, 
-        // or just rely on the firebase user presence
-        setUser({
-          userId: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          name: firebaseUser.displayName || 'Google User',
-          role: 'user',
-          permissions: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        // We set a placeholder token so the UI shows HomeScreen
-        setToken(firebaseUser.uid); 
+        // Sync Firebase state to local store
+        if (!user || user.userId !== firebaseUser.uid) {
+          setUser({
+            userId: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            name: firebaseUser.displayName || 'Google User',
+            role: 'user',
+            permissions: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          setToken(firebaseUser.uid); 
+        }
+      } else {
+        // Only clear if we were using Firebase (token is uid)
+        // Manual email login uses a different token format
+        if (token && token === user?.userId) {
+          setToken(null);
+          setUser(null);
+        }
       }
       if (initializing) setInitializing(false);
     };
 
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
-  }, [initializing, setToken, setUser]);
+    return subscriber;
+  }, [initializing, setToken, setUser, user, token]);
 
   if (initializing) return null;
 
