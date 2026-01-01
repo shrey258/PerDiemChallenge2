@@ -2,6 +2,10 @@
 
 A React Native booking application with a "Family" wallet-inspired aesthetic, featuring Google Sign-In, time-context awareness (NYC vs Local), and automated opening notifications.
 
+## 📺 Demo
+
+Watch the application in action: [Loom Demo](https://www.loom.com/share/552118a1b56e4f399732e8aeede53481)
+
 ## 🚀 Setup and Run Instructions
 
 ### Prerequisites
